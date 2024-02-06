@@ -1,7 +1,8 @@
 import { Context } from "koa"
 import { _JWT_KEY_ } from '../conf/secretKeys'
-import { Word, Youdao } from '../models/index'
+import { Word, Youdao, Phrase } from '../models/index'
 import { getYoudaoAndFormat } from '../server/word'
+import Sequelize from 'sequelize'
 
 export async function addWord(ctx: Context) {
   ctx.verifyParams({
@@ -29,8 +30,13 @@ export async function wordList(ctx: Context) {
   ctx.verifyParams({
     bookId: { type: 'string', required: true },
   })
-  // todo 这块要改 连表查询 Youdao表
-  ctx.body = await Word.findAll({where: {bookId: ctx.request.query.bookId}})
+  ctx.body = await Word.findAll({
+    where: { bookId: ctx.request.query.bookId },
+    include: [ 
+      { model: Youdao },
+      { model: Phrase },
+    ], // 查有道翻译
+  })
 }
 async function _addWord(ctx: Context, youdaoId) {
   const { id: userId } = ctx.state.user

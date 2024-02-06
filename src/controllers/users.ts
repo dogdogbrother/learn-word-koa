@@ -2,7 +2,7 @@ import { Context } from "koa"
 import Sequelize from 'sequelize'
 import { _JWT_KEY_ } from '../conf/secretKeys'
 import jsonwebtoken from 'jsonwebtoken'
-import { User } from '../models/index'
+import { User, UserBookRelation, Book } from '../models/index'
 import doCrypto from '../utils/cryp'
 
 const Op = Sequelize.Op
@@ -41,14 +41,14 @@ export async function login(ctx: Context) {
 
 export async function info(ctx: Context) {
   const { id } = ctx.state.user
-  const user = await User.findByPk(id)
+  const user = await User.findOne({
+    where: { id }
+  })
   ctx.body = user
 }
 export function sign(ctx: Context, id: number, username: string, type: 'login' | 'register') {
   const token = jsonwebtoken.sign(
-    { 
-      id,
-    }, 
+    { id }, 
     _JWT_KEY_, 
     { expiresIn: '20d' }
   )
